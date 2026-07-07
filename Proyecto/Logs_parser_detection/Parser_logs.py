@@ -104,5 +104,20 @@ def report_generator(analysis_results):
         with open(report_file, 'w') as f:
             json.dump(analysis_results, f, indent=4)
         logging.info(f"Report generated at {report_file}")
+        print(f"Report generated at {report_file}")
     except Exception as e:
         logging.error(f"Error while generating report: {e}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Log Parser and Risk Analysis Tool")
+    parser.add_argument("--collect", action="store_true", help="Collect logs from the source")
+    parser.add_argument("--analyze", action="store_true", help="Analyze the collected logs")
+    args = parser.parse_args()
+
+    if args.collect:
+        Collector_execution()
+    
+    if args.analyze:
+        log_file = os.path.join("logs", "logs_recolectados.log")
+        analysis_results = risk_analysis(log_file)
+        report_generator(analysis_results)
