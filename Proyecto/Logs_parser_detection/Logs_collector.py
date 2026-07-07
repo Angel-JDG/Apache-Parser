@@ -1,20 +1,23 @@
 import os
 import shutil
 
-log_origen = "/var/log/apache2/access.log"
+log_origin= "/var/log/apache2/access.log"
 
-log_destino = "logs/logs_recolectados.log"
+log_final = "logs/logs_recolectados.log"
 
-def recolectar_logs():
-    if not os.path.exists(log_origen):
-        print("El archivo de logs no existe")
-        return
+def logs_collector():
+    try:
+        
+        if not os.path.exists(log_origin):
+            print("logs files directory not found")
+            return
+        
+        os.makedirs("logs", exist_ok=True)
+        shutil.copy(log_origin, log_final)
+        print("logs files collected successfully")
+        
+    except Exception as e:
+        print(f"Error while collecting logs: {e}")
 
-    os.makedirs("logs", exist_ok=True)
 
-    shutil.copy(log_origen, log_destino)
-
-    print("Logs recolectados correctamente")
-
-
-recolectar_logs()
+logs_collector()
