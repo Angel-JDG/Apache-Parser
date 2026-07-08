@@ -161,18 +161,18 @@ def Risk_assessment(data):
     logging.info(f"Risk assessment completed. Risk level: {risk_level}")
     return risk_level
 
-def Events_Group_Analysis(data):
+def Events_Group_Analysis(events):
     """
     Group and analyze events based on the ip addresses.
     """
     try:
         events_by_ip = {}
-        for data_point in data:
-            ip = data_point.get("ips")
+        for event in events:
+            ip = event["ips"]
             if ip:
                 if ip not in events_by_ip:
                     events_by_ip[ip] = []
-                events_by_ip[ip].append(data_point)
+                events_by_ip[ip].append(event)
         return events_by_ip
     except Exception as e:
         logging.error(f"Error occurred while grouping events by IP: {e}")
