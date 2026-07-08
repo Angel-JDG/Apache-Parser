@@ -72,29 +72,28 @@ def Data_Extraction():
         logging.error(f"Error occurred while extracting data from log file: {e}")
         return {}
     
-    def SQL_Injection_Detection(data):
-        """
-        check for potential SQL injection patterns in the extracted data.
-        """
-        try:
-            type_SQL_injection = {
-                "SQL meta-characters": r"(\%27)|(\')|(\-\-)|(\%23)|(#)",
-                "SQL injection patterns": r"((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))",
-                "SQL injection logical patterns": r"\w*((\%27)|(\'))(\s)*((\%6F)|o|(\%4F))((\%72)|r|(\%52))",
-                "UNION-based SQL injection": r"((\%27)|(\'))union",
-                "EXEC-based SQL injection": r"exec(\s|\+)+(s|x)p\w+"
-            }
-            
-            for key, value in data.items():
-                if value:
-                    for name, pattern in type_SQL_injection.items():
-                        if re.search(pattern, value, re.IGNORECASE):
-                            logging.warning(f"Type of SQL injection detected: {name}")
-                            return name
-        except Exception as e:
-            logging.error(f"Error occurred while detecting SQL injection: {e}")
-            return None
-
+def SQL_Injection_Detection(data):
+    """
+    check for potential SQL injection patterns in the extracted data.
+    """
+    try:
+        type_SQL_injection = {
+            "SQL meta-characters": r"(\%27)|(\')|(\-\-)|(\%23)|(#)",
+            "SQL injection patterns": r"((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))",
+            "SQL injection logical patterns": r"\w*((\%27)|(\'))(\s)*((\%6F)|o|(\%4F))((\%72)|r|(\%52))",
+            "UNION-based SQL injection": r"((\%27)|(\'))union",
+            "EXEC-based SQL injection": r"exec(\s|\+)+(s|x)p\w+"
+        }            
+        for key, value in data.items():
+            if value:
+                for name, pattern in type_SQL_injection.items():
+                    if re.search(pattern, value, re.IGNORECASE):
+                        logging.warning(f"Type of SQL injection detected: {name}")
+                        return name
+        return None
+    except Exception as e:
+        logging.error(f"Error occurred while detecting SQL injection: {e}")
+        return None
 
 def Path_Transversal_Detection(data):
     """
