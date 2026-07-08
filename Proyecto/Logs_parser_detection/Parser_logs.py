@@ -161,23 +161,40 @@ def Risk_assessment(data):
     logging.info(f"Risk assessment completed. Risk level: {risk_level}")
     return risk_level
 
+def Events_Group_Analysis(data):
+    """
+    Group and analyze events based on the ip addresses.
+    """
+    try:
+        events_by_ip = {}
+        for data_point in data:
+            ip = data_point.get("ips")
+            if ip:
+                if ip not in events_by_ip:
+                    events_by_ip[ip] = []
+                events_by_ip[ip].append(data_point)
+        return events_by_ip
+    except Exception as e:
+        logging.error(f"Error occurred while grouping events by IP: {e}")
+        return {}
+
 def Report_Generator(data, risk_level):
     """
-    Generate a report based on the extracted data and risk assessment.
+    Generate a report based on the ip addresses and risk assessment.
     """
     try:
         report = {
-            "extracted_data": data,
-            "risk_level": risk_level
+            "risk_level": risk_level,
+            "events": Events_Group_Analysis(data)
         }
         
-        report_path = os.path.join(OUTPUT_DIR, "report.json")
+        report_file_path = os.path.join(OUTPUT_DIR, "report.json")
         os.makedirs(OUTPUT_DIR, exist_ok=True)
         
-        with open(report_path, 'w') as report_file:
+        with open(report_file_path, "w") as report_file:
             json.dump(report, report_file, indent=4)
         
-        logging.info(f"Report generated successfully at {report_path}")
+        logging.info(f"Report generated at {report_file_path}")
     except Exception as e:
         logging.error(f"Error occurred while generating report: {e}")
 
