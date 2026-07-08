@@ -50,7 +50,7 @@ def Data_Extraction():
         if not os.path.exists(log_file_path):
             logging.error(f"Log file {log_file_path} does not exist.")
             return
-        
+        events_list = []       
         ips = re.search(r'(\d{1,3}\.){3}\d{1,3}', open(log_file_path).read())
         dates = re.search(r'\d{2}/[A-Za-z]{3}/', open(log_file_path).read())
         times = re.search(r'\d{2}:\d{2}:\d{2}', open(log_file_path).read())
@@ -67,6 +67,7 @@ def Data_Extraction():
             "user_agents": user_agents.group() if user_agents else None
         }
         
+        events_list.append(data)
         return data
     except Exception as e:
         logging.error(f"Error occurred while extracting data from log file: {e}")
@@ -161,13 +162,13 @@ def Risk_assessment(data):
     logging.info(f"Risk assessment completed. Risk level: {risk_level}")
     return risk_level
 
-def Events_Group_Analysis(events):
+def Events_Group_Analysis(events_list):
     """
     Group and analyze events based on the ip addresses.
     """
     try:
         events_by_ip = {}
-        for event in events:
+        for event in events_list:
             ip = event["ips"]
             if ip:
                 if ip not in events_by_ip:
