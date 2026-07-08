@@ -68,7 +68,7 @@ def Data_Extraction():
         }
         
         events_list.append(data)
-        return data
+        return data, events_list
     except Exception as e:
         logging.error(f"Error occurred while extracting data from log file: {e}")
         return {}
