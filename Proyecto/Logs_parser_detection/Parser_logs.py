@@ -216,7 +216,6 @@ def main():
     try: 
         events_list = Data_Extraction()
         
-        keys_to_check = list(event.keys())
         for event in events_list:
             keys_to_check = list(event.keys())
             for key in keys_to_check:
