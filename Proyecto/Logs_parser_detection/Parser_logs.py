@@ -123,6 +123,7 @@ def Path_Transversal_Detection(events_list):
         for pattern in path_traversal_patterns:
             if re.search(pattern, value, re.IGNORECASE):
                 return True
+            return False
     except Exception as e:
         logging.error(f"Error occurred while detecting path traversal: {e}")
         return False    
@@ -164,11 +165,9 @@ def Risk_assessment(events_list):
             if SQL_Injection_Detection(value_str):
                 risk_level = "High"
                 break
-            elif Path_Transversal_Detection(value_str):
-                if risk_level == "Low":
+            if Path_Transversal_Detection(value_str):
                     risk_level = "Medium"
-            elif Scan_Detection(value_str):
-                if risk_level == "Low":
+            if Scan_Detection(value_str):
                     risk_level = "Medium"
     except Exception as e:
         logging.error(f"Error occurred while assessing risk: {e}")
@@ -217,8 +216,11 @@ def main():
     try: 
         events_list = Data_Extraction()
         
+        keys_to_check = list(event.keys())
         for event in events_list:
-            for key, value in event.items():
+            keys_to_check = list(event.keys())
+            for key in keys_to_check:
+                value = event[key]
                 value_str = str(value) if value else ""
                 
                 if SQL_Injection_Detection(value_str):
