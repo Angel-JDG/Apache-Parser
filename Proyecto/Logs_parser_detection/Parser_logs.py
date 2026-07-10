@@ -4,6 +4,11 @@ import json
 import argparse
 import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s: %(message)s'
+)
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
@@ -45,35 +50,41 @@ def Data_Extraction():
     """
     Extract IPs, dates, times, methods, status codes and user-agents from the collected log files.
     """
+    events_list = []
     try:
         log_file_path = os.path.join("logs", "logs_recolectados.log")
         if not os.path.exists(log_file_path):
             logging.error(f"Log file {log_file_path} does not exist.")
-            return
-        events_list = []       
-        ips = re.search(r'(\d{1,3}\.){3}\d{1,3}', open(log_file_path).read())
-        dates = re.search(r'\d{2}/[A-Za-z]{3}/', open(log_file_path).read())
-        times = re.search(r'\d{2}:\d{2}:\d{2}', open(log_file_path).read())
-        methods = re.search(r'\"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\"', open(log_file_path).read())
-        status_codes = re.search(r'\s(\d{3})\s', open(log_file_path).read())
-        user_agents = re.search(r'\"[^\"]*\"$', open(log_file_path).read())
+            return []
         
-        data = {
-            "ips": ips.group() if ips else None,
-            "dates": dates.group() if dates else None,
-            "times": times.group() if times else None,
-            "methods": methods.group() if methods else None,
-            "status_codes": status_codes.group() if status_codes else None,
-            "user_agents": user_agents.group() if user_agents else None
-        }
-        
-        events_list.append(data)
-        return data, events_list
+        with open(log_file_path, 'r') as log_file:
+            content = log_file.read()
+            
+            events_list = []
+            for line in content.split('\n'):
+                ips = re.findall(r'(\d{1,3}\.){3}\d{1,3}', line)
+                dates = re.findall(r'\d{2}/[A-Za-z]{3}/', line)
+                times = re.findall(r'\d{2}:\d{2}:\d{2}', line)
+                methods = re.findall(r'\"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\"', line)
+                status_codes = re.findall(r'\s(\d{3})\s', line)
+                user_agents = re.findall(r'\"[^\"]*\"$', line)
+                        
+                data = {
+                    "ips": ips[0] if ips else None,
+                    "dates": dates[0] if dates else None,
+                    "times": times[0] if times else None,
+                    "methods": methods[0] if methods else None,
+                    "status_codes": status_codes[0] if status_codes else None,
+                    "user_agents": user_agents[0] if user_agents else None
+                    }
+                    
+                events_list.append(data)
+        return events_list
     except Exception as e:
         logging.error(f"Error occurred while extracting data from log file: {e}")
         return {}
     
-def SQL_Injection_Detection(data):
+def SQL_Injection_Detection(events_list):
     """
     check for potential SQL injection patterns in the extracted data.
     """
@@ -84,19 +95,19 @@ def SQL_Injection_Detection(data):
             "SQL injection logical patterns": r"\w*((\%27)|(\'))(\s)*((\%6F)|o|(\%4F))((\%72)|r|(\%52))",
             "UNION-based SQL injection": r"((\%27)|(\'))union",
             "EXEC-based SQL injection": r"exec(\s|\+)+(s|x)p\w+"
-        }            
-        for key, value in data.items():
-            if value:
-                for name, pattern in type_SQL_injection.items():
-                    if re.search(pattern, value, re.IGNORECASE):
-                        logging.warning(f"Type of SQL injection detected: {name}")
-                        return name
+        }
+        value = str(events_list) if isinstance(events_list, list) else events_list
+
+        for name, pattern in type_SQL_injection.items():
+            if re.search(pattern, value, re.IGNORECASE):
+                logging.warning(f"Type of SQL injection detected: {name}")
+                return name
         return None
     except Exception as e:
         logging.error(f"Error occurred while detecting SQL injection: {e}")
         return None
 
-def Path_Transversal_Detection(data):
+def Path_Transversal_Detection(events_list):
     """
     Check for potential path traversal patterns in the extracted data.
     """
@@ -107,18 +118,16 @@ def Path_Transversal_Detection(data):
             r"(\.\./\.\./|\.\.\\\.\.\\)",
             r"(%2e%2e/%2e%2e/|%2e%2e\\%2e%2e\\)"
         ]
+        value = str(events_list) if isinstance(events_list, list) else events_list
         
-        for key, value in data.items():
-            if value:
-                for pattern in path_traversal_patterns:
-                    if re.search(pattern, value, re.IGNORECASE):
-                        logging.warning(f"Potential path traversal detected in {key}: {value}")
-                        return True
+        for pattern in path_traversal_patterns:
+            if re.search(pattern, value, re.IGNORECASE):
+                return True
     except Exception as e:
         logging.error(f"Error occurred while detecting path traversal: {e}")
         return False    
 
-def Scan_Detection(data):
+def Scan_Detection(events_list):
     """
     Check for potential scan patterns in the extracted data.
     """
@@ -132,29 +141,29 @@ def Scan_Detection(data):
             r"fimap",
             r"wpscan"
         ]
-    
-        for key, value in data.items():
-            if value:
-                for pattern in scan_patterns:
-                    if re.search(pattern, value, re.IGNORECASE):
-                        logging.warning(f"Potential scan detected in {key}: {value}")
-                        return True
+        value = str(events_list)
+        
+        for pattern in scan_patterns:
+            if re.search(pattern, value, re.IGNORECASE):
+                logging.warning(f"Potential scan detected in: {pattern}")
+                return True
+        return False
     except Exception as e:
         logging.error(f"Error occurred while detecting scan: {e}")
         return False
 
-def Risk_assessment(data):
+def Risk_assessment(events_list):
     """
     Assess the risk level based on the detected patterns in the extracted data.
     """
     risk_level = "Low"
     
     try:
-        if SQL_Injection_Detection(data):
+        if SQL_Injection_Detection(events_list):
             risk_level = "High"
-        elif Path_Transversal_Detection(data):
+        elif Path_Transversal_Detection(events_list):
             risk_level = "Medium"
-        elif Scan_Detection(data):
+        elif Scan_Detection(events_list):
             risk_level = "Medium"
     except Exception as e:
         logging.error(f"Error occurred while assessing risk: {e}")
@@ -169,7 +178,7 @@ def Events_Group_Analysis(events_list):
     try:
         events_by_ip = {}
         for event in events_list:
-            ip = event["ips"]
+            ip = event["ips"] if event["ip"] else "unknown"
             if ip:
                 if ip not in events_by_ip:
                     events_by_ip[ip] = []
@@ -199,6 +208,28 @@ def Report_Generator(data, risk_level):
     except Exception as e:
         logging.error(f"Error occurred while generating report: {e}")
 
+def main():
+    try: 
+        events_list = Data_Extraction()
+        
+        for event in events_list:
+            for key, value in event.items():
+                value_str = str(value) if value else ""
+                
+                if SQL_Injection_Detection(value_str):
+                    event["sql_injection"] = SQL_Injection_Detection(value_str)
+                if Path_Transversal_Detection(value_str):
+                    event["path_transversal"] = True
+                if Scan_Detection(value_str):
+                    event["scan_detection"] = True
+            risk_level = Risk_assessment(event)
+            event["risk_level"] = risk_level
+                    
+        events_by_ip = Events_Group_Analysis(events_list)
+        Report_Generator(events_list, risk_level)
+    except Exception as e:
+        logging.error(f"error in main execution: {e}")
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Log Parser and Risk Analysis Tool")
     parser.add_argument("--collect", action="store_true", help="Collect logs from the source")
@@ -209,7 +240,4 @@ if __name__ == "__main__":
         Collector_execution()
     
     if args.analyze:
-        log_file = os.path.join("logs", "logs_recolectados.log")
-        analysis_results = Data_Extraction()
-        risk_level = Risk_assessment(analysis_results)
-        Report_Generator(analysis_results, risk_level)
+        main()
