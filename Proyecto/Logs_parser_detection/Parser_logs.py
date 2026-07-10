@@ -62,9 +62,9 @@ def Data_Extraction():
             
             events_list = []
             for line in content.split('\n'):
-                ips = re.findall(r'(\d{1,3}\.{1,3}\d{1,3})', line)
+                ips = re.findall(r'(\d{1,3}\d\.{1,3}\d\.{1,3}\d\.{1,3})', line)
                 dates = re.findall(r'\d{2}/[A-Za-z]/{3}', line)
-                times = re.findall(r'\d{2}:\d{2}:\d{2}', line)
+                times = re.findall(r'\d{2}/[A-Za-z]{3}/\d{4}', line)
                 methods = re.findall(r'\"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\"', line)
                 status_codes = re.findall(r'\s(\d{3})\s', line)
                 user_agents = re.findall(r'\"[^\"]*\"$', line)
