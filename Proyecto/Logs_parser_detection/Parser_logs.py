@@ -82,7 +82,7 @@ def Data_Extraction():
         return events_list
     except Exception as e:
         logging.error(f"Error occurred while extracting data from log file: {e}")
-        return {}
+        return []
     
 def SQL_Injection_Detection(events_list):
     """
@@ -159,12 +159,17 @@ def Risk_assessment(events_list):
     risk_level = "Low"
     
     try:
-        if SQL_Injection_Detection(events_list):
-            risk_level = "High"
-        elif Path_Transversal_Detection(events_list):
-            risk_level = "Medium"
-        elif Scan_Detection(events_list):
-            risk_level = "Medium"
+        for key, value in events_list.items():
+            value_str = str(value) if value else ""
+            if SQL_Injection_Detection(value_str):
+                risk_level = "High"
+                break
+            elif Path_Transversal_Detection(value_str):
+                if risk_level == "Low":
+                    risk_level = "Medium"
+            elif Scan_Detection(value_str):
+                if risk_level == "Low":
+                    risk_level = "Medium"
     except Exception as e:
         logging.error(f"Error occurred while assessing risk: {e}")
     
@@ -178,7 +183,7 @@ def Events_Group_Analysis(events_list):
     try:
         events_by_ip = {}
         for event in events_list:
-            ip = event["ips"] if event["ip"] else "unknown"
+            ip = event["ips"] if event["ips"] else "unknown"
             if ip:
                 if ip not in events_by_ip:
                     events_by_ip[ip] = []
