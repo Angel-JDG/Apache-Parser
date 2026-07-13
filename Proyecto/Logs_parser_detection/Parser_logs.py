@@ -97,6 +97,7 @@ def SQL_Injection_Detection(events_list):
     check for potential SQL injection patterns in the extracted data.
     """
     try:
+        value = str(events_list) if events_list else ""
         type_SQL_injection = {
             "SQL meta-characters": r"(\%27)|(\')|(\-\-)|(\%23)|(#)",
             "SQL injection patterns": r"((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))",
@@ -104,7 +105,6 @@ def SQL_Injection_Detection(events_list):
             "UNION-based SQL injection": r"((\%27)|(\'))union",
             "EXEC-based SQL injection": r"exec(\s|\+)+(s|x)p\w+"
         }
-        value = str(events_list) if isinstance(events_list, list) else events_list
 
         for name, pattern in type_SQL_injection.items():
             if re.search(pattern, value, re.IGNORECASE):
@@ -270,6 +270,8 @@ def Report_Generator_General(events_list):
 def main():
     try: 
         events_list = Data_Extraction()
+        for event in events_list[:10]:
+            print(event["request"])
         
         for event in events_list:
             keys_to_check = list(event.keys())
