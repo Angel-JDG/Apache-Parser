@@ -240,14 +240,15 @@ def Report_Generator_General(events_list):
             report_item.append({
                 "ip": ip,
                 "occurrences": occurrences,
-                "recurrence_level": risk,
+                "recurrence_level": occurrence_status,
                 "methods_detected": sorted(list(methods)),
                 "sql_injection": sql_inj,
                 "path_transversal": path_trav,
-                "scan_detected": scan
+                "scan_detected": scan,
+                "risk_level": risk
             })
         
-        report_item.sort()(key = lambda X: x["occurrences"], reverse = True)
+        report_item.sort(key = lambda X: X["occurrences"], reverse = True)
         
         report = {"total_ip": len(events_by_ip), "summary": report_item}
         with open(os.path.join(OUTPUT_DIR, "General_Report.json"), "w") as f:
