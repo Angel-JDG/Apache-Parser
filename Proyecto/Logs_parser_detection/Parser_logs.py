@@ -276,7 +276,7 @@ def main():
             request = event.get("request", "")
             user_agent = event.get("user_agents", "")
             
-            if SQL_Injection_Detection(value_str):
+            if SQL_Injection_Detection(request):
                 event["sql_injection"] = True
             if Path_Transversal_Detection(request):
                 event["path_transversal"] = True
