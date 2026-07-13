@@ -65,7 +65,7 @@ def Data_Extraction():
                 ips = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line)
                 dates = re.findall(r'\d{2}/[A-Za-z]{3}/\d{4}', line)
                 times = re.findall(r'\d{2}:\d{2}:\d{2}', line)
-                match = re.findall(r'"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)\s+HTTP)"', line)
+                match = re.search(r'"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)\s+HTTP"', line)
                 status_codes = re.findall(r'\s(\d{3})\s', line)
                 user_agents = re.findall(r'\"[^\"]*\"$', line)
                 
@@ -73,17 +73,17 @@ def Data_Extraction():
                     methods = match.group(1)
                     requests = match.group(2)
                 else:
-                    method = None
+                    methods = None
                     requests = None
                         
                 data = {
                     "ips": ips[0] if ips else None,
                     "dates": dates[0] if dates else None,
                     "times": times[0] if times else None,
-                    "methods": methods[0] if methods else None,
+                    "methods": methods,
                     "status_codes": status_codes[0] if status_codes else None,
                     "user_agents": user_agents[0] if user_agents else None,
-                    "request": requests[0] if requests else None
+                    "request": requests
                     }
                     
                 events_list.append(data)
