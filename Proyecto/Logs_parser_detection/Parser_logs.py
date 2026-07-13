@@ -65,7 +65,7 @@ def Data_Extraction():
                 ips = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line)
                 dates = re.findall(r'\d{2}/[A-Za-z]{3}/\d{4}', line)
                 times = re.findall(r'\d{2}:\d{2}:\d{2}', line)
-                match = re.search(r'"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)\s+HTTP"', line)
+                match = re.search(r'"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)\s+HTTP', line)
                 status_codes = re.findall(r'\s(\d{3})\s', line)
                 user_agents = re.findall(r'\"[^\"]*\"$', line)
                 
@@ -99,8 +99,8 @@ def SQL_Injection_Detection(events_list):
     try:
         value = str(events_list) if events_list else ""
         type_SQL_injection = {
-            "SQL meta-characters": r"(\%27)|(\')|(\-\-)|(\%23)|(#)",
-            "SQL injection patterns": r"((\%3D)|(=))[^\n]*((\%27)|(\')|(\-\-)|(\%3B)|(;))",
+            "SQL meta-characters": r"(\%27)|(\')|(')|(\-\-)|(\%23)|(#)",
+            "SQL injection patterns": r"((\%3D)|(=))[^\n]*((\%27)|(\')|(')|(\-\-)|(\%3B)|(;))",
             "SQL injection logical patterns": r"\w*((\%27)|(\'))(\s)*((\%6F)|o|(\%4F))((\%72)|r|(\%52))",
             "UNION-based SQL injection": r"((\%27)|(\'))union",
             "EXEC-based SQL injection": r"exec(\s|\+)+(s|x)p\w+"
