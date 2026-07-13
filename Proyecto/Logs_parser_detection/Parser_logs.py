@@ -86,7 +86,7 @@ def Data_Extraction():
         logging.error(f"Error occurred while extracting data from log file: {e}")
         return []
     
-def SQL_Injection_Detection(event["request"]):
+def SQL_Injection_Detection(events_list):
     """
     check for potential SQL injection patterns in the extracted data.
     """
@@ -109,7 +109,7 @@ def SQL_Injection_Detection(event["request"]):
         logging.error(f"Error occurred while detecting SQL injection: {e}")
         return None
 
-def Path_Transversal_Detection(event["request"]):
+def Path_Transversal_Detection(events_list):
     """
     Check for potential path traversal patterns in the extracted data.
     """
@@ -267,15 +267,18 @@ def main():
         
         for event in events_list:
             keys_to_check = list(event.keys())
+            request = event.get("request", "")
+            user_agent = event.get("user_user agent", "")
+            
             for key in keys_to_check:
                 value = event[key]
                 value_str = str(value) if value else ""
                 
                 if SQL_Injection_Detection(value_str):
-                    event["sql_injection"] = SQL_Injection_Detection(value_str)
-                if Path_Transversal_Detection(value_str):
+                    event["sql_injection"] = SQL_Injection_Detection(request)
+                if Path_Transversal_Detection(request):
                     event["path_transversal"] = True
-                if Scan_Detection(value_str):
+                if Scan_Detection(user_agent):
                     event["scan_detection"] = True
             risk_level = Risk_assessment(event)
             event["risk_level"] = risk_level
