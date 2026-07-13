@@ -65,10 +65,16 @@ def Data_Extraction():
                 ips = re.findall(r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', line)
                 dates = re.findall(r'\d{2}/[A-Za-z]{3}/\d{4}', line)
                 times = re.findall(r'\d{2}:\d{2}:\d{2}', line)
-                methods = re.findall(r'\"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\"', line)
+                match = re.findall(r'"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)\s+HTTP)"', line)
                 status_codes = re.findall(r'\s(\d{3})\s', line)
                 user_agents = re.findall(r'\"[^\"]*\"$', line)
-                requests = re.findall(r'"(?:GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)', line)
+                
+                if match:
+                    methods = match.group(1)
+                    requests = match.group(2)
+                else:
+                    method = None
+                    requests = None
                         
                 data = {
                     "ips": ips[0] if ips else None,
@@ -114,18 +120,18 @@ def Path_Transversal_Detection(events_list):
     Check for potential path traversal patterns in the extracted data.
     """
     try:
+        event = str(events_list) if events_list else ""
         path_traversal_patterns = [
             r"(\.\./|\.\.\\)",
             r"(%2e%2e/|%2e%2e\\)",
             r"(\.\./\.\./|\.\.\\\.\.\\)",
             r"(%2e%2e/%2e%2e/|%2e%2e\\%2e%2e\\)"
         ]
-        value = str(events_list) if isinstance(events_list, list) else events_list
         
         for pattern in path_traversal_patterns:
-            if re.search(pattern, value, re.IGNORECASE):
+            if re.search(pattern, event, re.IGNORECASE):
                 return True
-            return False
+        return False
     except Exception as e:
         logging.error(f"Error occurred while detecting path traversal: {e}")
         return False    
