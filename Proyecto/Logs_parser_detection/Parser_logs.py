@@ -68,6 +68,7 @@ def Data_Extraction():
                 methods = re.findall(r'\"(GET|POST|PUT|DELETE|HEAD|OPTIONS)\"', line)
                 status_codes = re.findall(r'\s(\d{3})\s', line)
                 user_agents = re.findall(r'\"[^\"]*\"$', line)
+                requests = re.findall(r'"(?:GET|POST|PUT|DELETE|HEAD|OPTIONS)\s+([^ ]+)', line)
                         
                 data = {
                     "ips": ips[0] if ips else None,
@@ -75,7 +76,8 @@ def Data_Extraction():
                     "times": times[0] if times else None,
                     "methods": methods[0] if methods else None,
                     "status_codes": status_codes[0] if status_codes else None,
-                    "user_agents": user_agents[0] if user_agents else None
+                    "user_agents": user_agents[0] if user_agents else None,
+                    "request": requests[0] if requests else None
                     }
                     
                 events_list.append(data)
@@ -84,7 +86,7 @@ def Data_Extraction():
         logging.error(f"Error occurred while extracting data from log file: {e}")
         return []
     
-def SQL_Injection_Detection(events_list):
+def SQL_Injection_Detection(event["request"]):
     """
     check for potential SQL injection patterns in the extracted data.
     """
@@ -107,7 +109,7 @@ def SQL_Injection_Detection(events_list):
         logging.error(f"Error occurred while detecting SQL injection: {e}")
         return None
 
-def Path_Transversal_Detection(events_list):
+def Path_Transversal_Detection(event["request"]):
     """
     Check for potential path traversal patterns in the extracted data.
     """
