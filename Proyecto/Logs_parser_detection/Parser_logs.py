@@ -274,18 +274,14 @@ def main():
         for event in events_list:
             keys_to_check = list(event.keys())
             request = event.get("request", "")
-            user_agent = event.get("user_user agent", "")
+            user_agent = event.get("user_agents", "")
             
-            for key in keys_to_check:
-                value = event[key]
-                value_str = str(value) if value else ""
-                
-                if SQL_Injection_Detection(value_str):
-                    event["sql_injection"] = SQL_Injection_Detection(request)
-                if Path_Transversal_Detection(request):
-                    event["path_transversal"] = True
-                if Scan_Detection(user_agent):
-                    event["scan_detection"] = True
+            if SQL_Injection_Detection(value_str):
+                event["sql_injection"] = True
+            if Path_Transversal_Detection(request):
+                event["path_transversal"] = True
+            if Scan_Detection(user_agent):
+                event["scan_detection"] = True
             risk_level = Risk_assessment(event)
             event["risk_level"] = risk_level
                     
