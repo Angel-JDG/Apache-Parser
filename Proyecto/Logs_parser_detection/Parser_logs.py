@@ -12,7 +12,6 @@ logging.basicConfig(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 
-# expected files from Logs collector
 expected_files = ["logs_recolectados.log"]
 
 def files_verifier():
