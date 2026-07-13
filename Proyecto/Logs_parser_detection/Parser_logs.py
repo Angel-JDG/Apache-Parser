@@ -212,6 +212,52 @@ def Report_Generator(data, risk_level):
     except Exception as e:
         logging.error(f"Error occurred while generating report: {e}")
 
+def Report_Generator_General(events_list):
+    """General report group by IP"""
+    try:
+        events_by_ip = Events_Group_Analysis(events_list)
+        report_item = []
+        
+        for ip, events in events_by_ip.items():
+            occurrences = len(events)
+            
+            methods = set(e.get("methods") for e in events if e.get("methods"))
+            sql_inj = any (e.get("sql_injection") for e in events)
+            path_trav = any (e.get("path_transversal") for e in events)
+            scan = any (e.get("scan_detection") for e in events)
+            
+            risk = "High" if sql_inj else ("Medium" if (path_trav or scan) else "Low")
+            
+            if occurrences >=50:
+                occurrence_status = "Critical"
+            elif occurrences>=20:
+                occurrence_status = "High"
+            elif occurrences >= 10: 
+                occurrence_status = "Medium"
+            else:
+                occurrence_status = "Low"
+            
+            report_item.append({
+                "ip": ip,
+                "occurrences": occurrences,
+                "recurrence_level": risk,
+                "methods_detected": sorted(list(methods)),
+                "sql_injection": sql_inj,
+                "path_transversal": path_trav,
+                "scan_detected": scan
+            })
+        
+        report_item.sort()(key = lambda X: x["occurrences"], reverse = True)
+        
+        report = {"total_ip": len(events_by_ip), "summary": report_item}
+        with open(os.path.join(OUTPUT_DIR, "General_Report.json"), "w") as f:
+            json.dump(report, f, indent=4)
+        
+        logging.info("General report generated")
+    
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        
 def main():
     try: 
         events_list = Data_Extraction()
@@ -233,6 +279,7 @@ def main():
                     
         events_by_ip = Events_Group_Analysis(events_list)
         Report_Generator(events_list, risk_level)
+        Report_Generator_General(events_list)
     except Exception as e:
         logging.error(f"error in main execution: {e}")
         
